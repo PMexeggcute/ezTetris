@@ -23,8 +23,10 @@ class Game
     void update();
     void render();
     bool isBottom();//检查是否触底了检查棋盘上对应currentY+1的值 触底时所有1都变为2
-    bool isBorder();
+    bool isBorderL();
+    bool isBorderR();
     void drawBoard();
     void eraseBoard();//清除所有为1的块,触底时在被清除前就需要置零
+    void blockGenerate(Graph &g);
 };
 #endif //GAME_H
