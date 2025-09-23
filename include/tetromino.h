@@ -4,13 +4,27 @@
 
 #ifndef TETROMINO_H
 #define TETROMINO_H
+#include <cstring>
+
 //方块
-class TETROMINO
+class Graph
+{
+public:
+    int matrix[3][3]{};
+    virtual ~Graph() = default;
+};
+
+class Square : public Graph
 {
     public:
-    struct square
-    {
-
-    };
+        Square()
+        {
+            int tmp[3][3] = {
+                {1,1,1,},
+                {1,1,1,},
+                {1,1,1,},
+            };
+            std::memcpy(matrix, tmp, sizeof(matrix));
+        }
 };
 #endif //TETROMINO_H

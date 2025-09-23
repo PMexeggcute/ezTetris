@@ -6,8 +6,13 @@
 
 #include <chrono>
 #include <thread>
+#include <bits/ctype_base.h>
 
-
+#include "tetromino.h"
+// TETROMINO tetromino;
+int x = 1;
+int y = 0;
+bool gameOver = false;
 void Game::init()
 {
     initscr();
@@ -17,39 +22,71 @@ void Game::init()
     keypad(stdscr, TRUE);
 }
 
-void Game::drawBlock(int x,int y)
+void Game::drawBlock(Graph &g,int x, int y)//显示图形
 {
-    mvaddch(y,x,'#');
+    for (int i = 0;i < 3;i++)
+    {
+        for (int j = 0;j < 3;j++)
+        {
+            if (g.matrix[i][j])
+                mvaddch(y+i,x+j,'#');
+        }
+    }
     refresh();
 }
 
-void Game::processInput()
+void Game::eraseBlock(Graph &g,int x, int y)
+{
+    for (int i = 0;i < 3;i++)
+    {
+        for (int j = 0;j < 3;j++)
+        {
+            if (g.matrix[i][j])
+                mvaddch(y+i,x+j,' ');//显示以后立马清除
+        }
+    }
+}
+
+void Game::processInput()//键盘操作
 {
     int ch = getch();
-    if(ch == KEY_LEFT)
+    if(ch == 260)
     {
-
+        x--;
     }
-    else if(ch == KEY_RIGHT)
+    else if(ch == 261)
     {
-
+        x++;
     }
 }
 
-void Game::update()
+void Game::update()//方块下落逻辑
 {
-
+    if (y<12)//方块是否与棋盘中其他方块y轴相邻
+        y++;//测试逻辑
+    else
+    {
+        y = 0;//重置y轴并且保持不变 同时生成新方块
+        //同时触发计分逻辑
+    }
 }
 
-void Game::render()
+void Game::render()//方块刷新逻辑 只有在触底时刷新方块
 {
-
+    Game game;
+    Square square;
+    if (true)
+    {
+        game.drawBlock(square,x,y);
+        refresh();
+        game.eraseBlock(square,x,y);
+    }
 }
 
 void Game::run()
 {
-    Game game;
-    while (!game.gameOver)
+    // Game game;
+    while (!gameOver)
     {
         processInput();
         update();//方块下落

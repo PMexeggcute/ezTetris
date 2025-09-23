@@ -6,13 +6,17 @@
 #define GAME_H
 //游戏主要循环
 #include "curses.h"
+#include "tetromino.h"
+extern int x;//作为偏移
+extern int y;
+extern bool gameOver;
 
 class Game
 {
     public:
-    bool gameOver = false;
     void init();
-    void drawBlock(int x,int y);
+    void drawBlock(Graph &g,int x, int y);
+    void eraseBlock(Graph &g,int x, int y);
     void processInput();
     void run();
     void cleanup();
