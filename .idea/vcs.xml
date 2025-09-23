@@ -2,7 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/remoteLib/PDCurses" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/third_party/pdcurses" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/tmp/PDCurses" vcs="Git" />
   </component>
 </project>
