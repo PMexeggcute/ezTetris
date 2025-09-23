@@ -13,6 +13,8 @@
 int x = 1;
 int y = 0;
 bool gameOver = false;
+Game game;
+int board[10][15];
 void Game::init()
 {
     initscr();
@@ -22,7 +24,7 @@ void Game::init()
     keypad(stdscr, TRUE);
 }
 
-void Game::drawBlock(Graph &g,int x, int y)//显示图形
+/*void Game::drawBlock(Graph &g,int x, int y)//显示图形
 {
     for (int i = 0;i < 3;i++)
     {
@@ -33,8 +35,21 @@ void Game::drawBlock(Graph &g,int x, int y)//显示图形
         }
     }
     refresh();
+}*/
+
+void Game::drawBoard()
+{
+    for (int i = 0;i < 15;i++)//y
+    {
+        for (int j = 0;j < 10;j++)//x
+        {
+            if (board[i][j])
+                mvaddch(i,j,'#');
+        }
+    }
 }
 
+/*
 void Game::eraseBlock(Graph &g,int x, int y)
 {
     for (int i = 0;i < 3;i++)
@@ -46,40 +61,64 @@ void Game::eraseBlock(Graph &g,int x, int y)
         }
     }
 }
+*/
+
+void Game::eraseBoard()
+{
+    for (int i = 0;i < 15;i++)
+    {
+        for (int j = 0;j < 10;j++)
+        {
+            if (board[i][j] == 1)
+                mvaddch(i,j,' ');
+        }
+    }
+}
 
 void Game::processInput()//键盘操作
 {
-    int ch = getch();
+    int ch = getch();//左
     if(ch == 260)
     {
-        x--;
+        if (true)//未出界
+            x--;
     }
-    else if(ch == 261)
+    else if(ch == 261)//右
     {
-        x++;
+        if (true)//未出界
+            x++;
     }
 }
 
 void Game::update()//方块下落逻辑
 {
-    if (y<12)//方块是否与棋盘中其他方块y轴相邻
-        y++;//测试逻辑
+    /*
+     先检查
+     erase
+     下落
+     然后refresh
+     */
+    if (isBottom())//触底了
+    {//1全变2
+
+    }
     else
     {
-        y = 0;//重置y轴并且保持不变 同时生成新方块
-        //同时触发计分逻辑
+        game.eraseBoard();
+        //为1的块集体向下移一格
+
+        refresh();
     }
 }
 
 void Game::render()//方块刷新逻辑 只有在触底时刷新方块
 {
-    Game game;
     Square square;
     if (true)
     {
-        game.drawBlock(square,x,y);
+        game.drawBoard();
         refresh();
-        game.eraseBlock(square,x,y);
+        //game.eraseBoard();
     }
 }
 
@@ -87,10 +126,14 @@ void Game::run()
 {
     // Game game;
     while (!gameOver)
-    {
+    {   /*展示棋盘
+        erase draw移动
+        到底时不再erase
+        然后循环,每次都循环展示棋盘而不是方块对象
+        */
+        render();//刷新屏幕
         processInput();
         update();//方块下落
-        render();//刷新屏幕
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }

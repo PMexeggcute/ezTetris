@@ -15,12 +15,16 @@ class Game
 {
     public:
     void init();
-    void drawBlock(Graph &g,int x, int y);
-    void eraseBlock(Graph &g,int x, int y);
+    // void drawBlock(Graph &g,int x, int y);
+    // void eraseBlock(Graph &g,int x, int y);
     void processInput();
     void run();
     void cleanup();
     void update();
     void render();
+    bool isBottom();//检查是否触底了检查棋盘上对应currentY+1的值 触底时所有1都变为2
+    bool isBorder();
+    void drawBoard();
+    void eraseBoard();//清除所有为1的块,触底时在被清除前就需要置零
 };
 #endif //GAME_H

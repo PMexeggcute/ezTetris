@@ -12,7 +12,6 @@ int main(){
     game.init();
     board.init();
     game.run();
-    // refresh();          // 将内容刷新到物理屏幕
     getch();            // 等待用户按键
     endwin();
     return 0;
