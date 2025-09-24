@@ -8,9 +8,9 @@
 class Board
 {
     public:
-    const int BOARD_WIDTH = 10;
-    const int BOARD_HEIGHT = 15;
-    static int board[12][16];//棋盘矩阵,0,1,2对应三种状态
+    static constexpr int BOARD_WIDTH = 10;
+    static constexpr int BOARD_HEIGHT = 20;
+    static int board[Board::BOARD_WIDTH+2][Board::BOARD_HEIGHT+2];//棋盘矩阵,0,1,2对应三种状态
     //0代表无方块
     //1代表运动的方块
     //2代表不动的方块
