@@ -11,10 +11,11 @@ class Board
     static constexpr int BOARD_WIDTH = 10;
     static constexpr int BOARD_HEIGHT = 20;
     static int board[Board::BOARD_WIDTH+2][Board::BOARD_HEIGHT+2];//棋盘矩阵,0,1,2对应三种状态
+    //1-10
     //0代表无方块
     //1代表运动的方块
     //2代表不动的方块
-    //3代表边界
-    void init();
+
+    void static init();
 };
 #endif //BOARD_H

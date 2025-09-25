@@ -28,5 +28,18 @@ class Game
     void drawBoard();
     void eraseBoard();//清除所有为1的块,触底时在被清除前就需要置零
     void blockGenerate(Graph &g);
+    void clearLinesAndScore();
+    void clearLines(int y);
+    // void clearLine(int y);
+    void downfall(int y);
+    bool isFull(int y);
+    double Score(int rate);
+    void showData();
+    void rotate();
+    private:
+    int rate = 0;//消除逻辑中用于记录一次性消除了几行
+    int bottomFlag = 0;
+    double score = 0;
+    BlockType type;
 };
 #endif //GAME_H

@@ -7,17 +7,16 @@
 void Board::init()
 {
 //左右边框
-    Board board;
     int i = 0;
-    for (i = 0; i< board.BOARD_HEIGHT;i++)
+    for (i = 0; i< Board::BOARD_HEIGHT;i++)
     {
         mvaddch(i,0,'|');
-        mvaddch(i,board.BOARD_WIDTH+1,'|');
-    }
+        mvaddch(i,Board::BOARD_WIDTH+1,'|');
+    }//下标1-10为可操作的
     //下边界
-    for (i = 0; i< board.BOARD_WIDTH+2;i++)
+    for (i = 0; i< Board::BOARD_WIDTH+2;i++)
     {
-        mvaddch(board.BOARD_HEIGHT,i,'-');
-    }
-    refresh();
+        mvaddch(Board::BOARD_HEIGHT,i,'-');
+    }//下标0-19为可操作
+    // refresh();
 }

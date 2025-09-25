@@ -13,12 +13,17 @@ enum class BlockType
 {
     Square,
     Hero,
+    Snake,
+    Kenas,
+    Jacob,
+    Bojac,
+    Tank,
 };
 
 BlockType randomBlock();
 std::unique_ptr<Graph> createBlock(BlockType type);
 //方块
-class Graph
+class Graph//O I S Z L J T
 {
 public:
     int matrix[4][4]{};
@@ -45,12 +50,88 @@ class Hero : public Graph
     Hero()
     {
         int hero[4][4] = {
-        {1,0,0,0,},
-        {1,0,0,0,},
-        {1,0,0,0,},
-        {1,0,0,0,},
+        {0,1,0,0,},
+        {0,1,0,0,},
+        {0,1,0,0,},
+        {0,1,0,0,},
         };
         std::memcpy(matrix, hero, sizeof(matrix));
+    }
+};
+
+class Snake : public Graph
+{
+    public:
+    Snake()
+    {
+        int snake[4][4] = {
+            {0,1,1,0,},
+            {1,1,0,0,},
+            {0,0,0,0,},
+            {0,0,0,0,},
+        };
+        std::memcpy(matrix, snake, sizeof(matrix));
+    }
+};
+
+class Kenas : public Graph
+{
+    public:
+    Kenas()
+    {
+        int kenas[4][4] =
+        {
+            {1,1,0,0,},
+            {0,1,1,0,},
+            {0,0,0,0,},
+            {0,0,0,0,},
+        };
+        std::memcpy(matrix, kenas, sizeof(matrix));
+    }
+};
+
+class Jacob : public Graph
+{
+    public:
+    Jacob()
+    {
+        int jacob[4][4] = {
+            {0,1,0,0,},
+            {0,1,0,0,},
+            {1,1,0,0,},
+            {0,0,0,0,},
+        };
+        std::memcpy(matrix, jacob, sizeof(matrix));
+    }
+};
+
+class Bojac : public Graph
+{
+    public:
+    Bojac()
+    {
+        int bojac[4][4] = {
+            {0,1,0,0,},
+            {0,1,0,0,},
+            {0,1,1,0,},
+            {0,0,0,0,},
+        };
+        std::memcpy(matrix, bojac, sizeof(matrix));
+    }
+};
+
+class Tank : public Graph
+{
+    public:
+    Tank()
+    {
+        int tank[4][4] = {
+            {1,1,1,0,},
+            {0,1,0,0,},
+            {0,0,0,0,},
+            {0,0,0,0,},
+        };
+        std::memcpy(matrix, tank, sizeof(matrix));
     }
 };
 #endif //TETROMINO_H

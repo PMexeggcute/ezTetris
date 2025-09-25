@@ -6,6 +6,7 @@
 
 #include <chrono>
 #include <thread>
+#include <vector>
 #include <bits/ctype_base.h>
 
 #include "board.h"
@@ -53,9 +54,11 @@ void Game::blockGenerate(Graph &block)
 
 void Game::drawBoard()
 {
+    Board::init();
+    showData();
     for (int y = 0;y < Board::BOARD_HEIGHT;y++)//y
     {
-        for (int x = 0;x < Board::BOARD_WIDTH+1;x++)//x
+        for (int x = 1;x < Board::BOARD_WIDTH+1;x++)//x
         {
             if (board[x][y])
                 mvaddch(y,x,'#');
@@ -94,7 +97,7 @@ void Game::eraseBoard()
 void Game::processInput()//键盘操作逻辑
 {
     int ch = getch();
-    game.eraseBoard();
+    // game.eraseBoard();
     //后续增加下操作
     if (!isBottom())
     {
@@ -135,6 +138,10 @@ void Game::processInput()//键盘操作逻辑
                 }
             }
         }
+        else if (ch == 32)//空格
+        {
+            rotate();
+        }
     }
 }
 void Game::update()//方块下落逻辑
@@ -145,6 +152,17 @@ void Game::update()//方块下落逻辑
      下落
      然后refresh
      */
+    for (int y = Board::BOARD_HEIGHT - 1;y >= 0;y--)//下落
+    {
+        for (int x = Board::BOARD_WIDTH;x >= 0;x--)
+        {
+            if (board[x][y] == 1)
+            {
+                board[x][y] = 0;
+                board[x][y+1] = 1;
+            }
+        }
+    }//先下落
     if (isBottom())//触底了
     {//1全变2
         for (int y = 0;y < Board::BOARD_HEIGHT;y++)
@@ -155,26 +173,7 @@ void Game::update()//方块下落逻辑
                     board[x][y] = 2;
             }
         }
-        auto type = randomBlock();
-        auto block = createBlock(type);
-        blockGenerate(*block);
-    }
-    else
-    {
-        // game.eraseBoard();
-        //为1的块集体向下移一格
-        for (int y = Board::BOARD_HEIGHT - 1;y >= 0;y--)
-        {
-            for (int x = Board::BOARD_WIDTH;x >= 0;x--)
-            {
-                if (board[x][y] == 1)
-                {
-                    board[x][y] = 0;
-                    board[x][y+1] = 1;
-                }
-            }
-        }
-        // refresh();
+        bottomFlag = 1;
     }
 }
 
@@ -250,24 +249,204 @@ bool Game::isBorderR()
     }
     return false;
 }
+
+bool Game::isFull(int y)
+{
+    //不一定是最下面一层是满的
+    //判断该行是否是满的,即需要消行的
+    for (int x = 1;x < Board::BOARD_WIDTH+1;x++)
+    {
+        if (board[x][y] != 2)
+            return false;
+    }
+    return true;
+}
+//
+// void Game::clearLine(int y)
+// {
+//     //是否需要全部mvaddch(' ')? 还是说run的最后将整个屏幕clear
+// }
+
+void Game::downfall(int y)
+{//y即以上层均需要操作
+    for (;y >= 1;y--)
+    {
+        for (int x = 1;x < Board::BOARD_WIDTH + 1;x++)
+        {
+            board[x][y] = board[x][y-1];
+        }
+    }
+    for (int x = 0;x < Board::BOARD_WIDTH + 1;x++)
+        board[x][0] = 0;
+    clear();
+    drawBoard();  //待定
+}
+
+
+void Game::clearLines(int y)
+{
+    if (isFull(y))
+    {
+        rate++;
+        // clearLine(y);
+        downfall(y);
+        clearLines(y);
+    }
+}
+
+double Game::Score(int rate)//分数和什么有关? 待定
+{
+    return 10*rate*rate;
+}
+
+void Game::clearLinesAndScore()
+{
+    //如果棋盘最底部均为2,消行
+    //注意连续消行处理及其得分规则
+    rate = 0;//每次都归零
+    for (int y = Board::BOARD_HEIGHT-1;y >= 0;y--)
+    {
+        //if (isFull(y))//如果该行(y)已满,执行消除逻辑
+          //  int tmp = y;
+        clearLines(y);
+
+        //     //消行并且rate++,得分通过rate的值相关 满足单调递增曲线
+        //     //如何消行 1自下而上判断 2如果是就2变0然后其他块向下移
+        //     //递归处理
+
+        //score();
+    }
+    score += Score(rate);
+}
+
+void Game::showData()
+{
+    mvprintw(0,15,"Score: %lf",score);
+}
+
+void Game::rotate()//提取到临时矩阵 做变换后写回
+{
+    if (type == BlockType::Square)
+        return;
+    std::vector<std::pair<int,int>> blockCoords;
+    for (int y = 0;y < Board::BOARD_HEIGHT;y++)
+    {
+        for (int x = 1;x < Board::BOARD_WIDTH + 1;x++)
+        {
+            if (board[x][y] == 1)
+            blockCoords.emplace_back(x,y);
+        }
+    }//遍历棋盘 找到所有1
+
+    int minX = Board::BOARD_WIDTH,maxX = 0;
+    int minY = Board::BOARD_HEIGHT,maxY = 0;
+    for (auto [x,y] : blockCoords)
+    {
+        minX = std::min(minX,x);
+        maxX = std::max(maxX,y);
+        minY = std::min(minY,y);
+        maxY = std::max(maxY,x);
+    }
+    int w = maxX - minX + 1;
+    int h = maxY - minY + 1;
+    //找到方块边界
+
+    std::vector<std::vector<int>> block(h,std::vector<int>(w,0));//STL vector方式创建二维数组
+    //创建一个h * w的矩阵
+    for (auto [x,y] : blockCoords)
+    {
+        block[x-minX][y-minY] = 1;
+    }//拷贝到临时数组里去
+
+    //旋转逻辑
+    std::vector<std::vector<int>> rotatedBlock(w,std::vector<int>(h,0));//旋转后矩阵变为w * h
+    for (int y = 0;y < h;y++)
+    {
+        for (int x = 0;x < w;y++)
+        {//snake横不变 kenas竖不变 均为逆时针
+            //旋转逻辑?
+            if (type == BlockType::Square || type == BlockType::Tank)
+                pass;//这个逻辑得重写
+            // else if (type == BlockType::Jacob || type == BlockType::Bojac ||
+            //     type == BlockType::Snake || type == BlockType::Kenas)
+            else
+                rotatedBlock[x][h - 1 - y] = block[y][x];//除square (已经在前面判断)和hero
+        }
+    }
+
+    //检测是否冲突
+    bool canRotate = true;
+    for (int y = 0;y < rotatedBlock.size();y++)
+    {
+        for (int x = 0;x < rotatedBlock[0].size();x++)
+        {
+            if (rotatedBlock[y][x] == 1)//判断原棋盘上对应位置是否可写回
+            {
+                int newX = x + minX;
+                int newY = y + minY;
+                if (newX < 0 || newX >= Board::BOARD_WIDTH ||
+                    newY < 0 || newY >= Board::BOARD_HEIGHT ||
+                    board[newX][newY] == 2)
+                {
+                    canRotate = false;
+                    break;
+                }
+            }
+        }
+        if (!canRotate)
+            break;
+    }
+
+    //写回
+    //先清除
+    for (auto [x,y] : blockCoords)
+        board[x][y] = 0;
+
+    //将旋转后的对象写回
+    for (int y = 0;y < rotatedBlock.size();y++)
+    {
+        for (int x = 0;x < rotatedBlock[0].size();x++)
+        {
+            if (rotatedBlock[y][x] == 1)
+                board[x + minX][y + minY] = 1;
+        }
+    }
+}
+
 void Game::run()
 {
     //先生成第一个
-    auto type = randomBlock();
+    type = randomBlock();
     auto block = createBlock(type);
+    if (block == nullptr)
+        return;//异常处理
     blockGenerate(*block);//随即生成
     // Game game;
+    for (int x = 1;x < Board::BOARD_WIDTH - 1;x++)//test
+    {
+        board[x][19] = 2;
+    }
     while (!gameOver)
-    {   /*展示棋盘
+    {
+        /*展示棋盘
         erase draw移动
         到底时不再erase
         然后循环,每次都循环展示棋盘而不是方块对象
         */
-
-        drawBoard();
+        if (bottomFlag)
+        {   auto type = randomBlock();
+            auto block = createBlock(type);
+            blockGenerate(*block);
+            bottomFlag = 0;
+        }
+        clear();//这样前文只需关注棋盘逻辑,不用手动清除
+        drawBoard();//refresh()在这里
         // render();//刷新屏幕
         processInput();
         update();//方块下落
+        //消行计分逻辑
+        //先变为2(静止块),然后判断是否可消除,再判断是否over 注意最上面一层的边界逻辑
+        clearLinesAndScore();//blockGenerate逻辑应该在清除之后
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }
