@@ -22,7 +22,7 @@ void Game::init()
     initscr();
     noecho();
     cbreak();
-    // nodelay(stdscr, TRUE);
+    nodelay(stdscr, TRUE);
     keypad(stdscr, TRUE);
 }
 
@@ -141,6 +141,7 @@ void Game::processInput()//键盘操作逻辑
         else if (ch == 32)//空格
         {
             rotate();
+            // drawBoard();
         }
     }
 }
@@ -343,34 +344,33 @@ void Game::rotate()//提取到临时矩阵 做变换后写回
     for (auto [x,y] : blockCoords)
     {
         minX = std::min(minX,x);
-        maxX = std::max(maxX,y);
+        maxX = std::max(maxX,x);
         minY = std::min(minY,y);
-        maxY = std::max(maxY,x);
+        maxY = std::max(maxY,y);
     }
     int w = maxX - minX + 1;
     int h = maxY - minY + 1;
     //找到方块边界
-
     std::vector<std::vector<int>> block(h,std::vector<int>(w,0));//STL vector方式创建二维数组
     //创建一个h * w的矩阵
     for (auto [x,y] : blockCoords)
     {
-        block[x-minX][y-minY] = 1;
+        block[y - minY][x - minX] = 1;
     }//拷贝到临时数组里去
 
     //旋转逻辑
-    std::vector<std::vector<int>> rotatedBlock(w,std::vector<int>(h,0));//旋转后矩阵变为w * h
-    for (int y = 0;y < h;y++)
+    std::vector<std::vector<int>> rotatedBlock(w,std::vector<int>(h,0));//变成 h * w
+    for (int x = 0;x < h;x++)
     {
-        for (int x = 0;x < w;y++)
+        for (int y = 0;y < w;y++)
         {//snake横不变 kenas竖不变 均为逆时针
             //旋转逻辑?
-            if (type == BlockType::Square || type == BlockType::Tank)
-                pass;//这个逻辑得重写
+            // if (type == BlockType::Square || type == BlockType::Tank)
+            //     pass;//这个逻辑得重写
             // else if (type == BlockType::Jacob || type == BlockType::Bojac ||
             //     type == BlockType::Snake || type == BlockType::Kenas)
-            else
-                rotatedBlock[x][h - 1 - y] = block[y][x];//除square (已经在前面判断)和hero
+            // else rotatedBlock[x][h - 1 - y] = block[y][x];//除square (已经在前面判断)和hero
+            rotatedBlock[w - 1 -y][x] = block[x][y];
         }
     }
 
@@ -394,7 +394,7 @@ void Game::rotate()//提取到临时矩阵 做变换后写回
             }
         }
         if (!canRotate)
-            break;
+            return;
     }
 
     //写回
@@ -422,10 +422,10 @@ void Game::run()
         return;//异常处理
     blockGenerate(*block);//随即生成
     // Game game;
-    for (int x = 1;x < Board::BOARD_WIDTH - 1;x++)//test
-    {
-        board[x][19] = 2;
-    }
+    // for (int x = 1;x < Board::BOARD_WIDTH - 1;x++)//test
+    // {
+    //     board[x][19] = 2;
+    // }
     while (!gameOver)
     {
         /*展示棋盘
