@@ -37,10 +37,11 @@ class Game
     // void clearLine(int y);
     void downfall(int y);
     bool isFull(int y);
-    double Score(int rate);
+    double Score(int rate,int y);
     void showData();
     void rotate();
     void inputThread();
+    void preview();
 
 private:
     int rate = 0;//消除逻辑中用于记录一次性消除了几行
@@ -49,6 +50,7 @@ private:
     BlockType type;
     int fps = 60;
     int fallCounter = 0;//决定何时执行下落逻辑
+    std::unique_ptr<Graph> block;
 
     std::queue<char> inputQueue;
     std::mutex queuemutex;

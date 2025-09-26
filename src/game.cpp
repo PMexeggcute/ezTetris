@@ -5,6 +5,7 @@
 #include "game.h"
 
 #include <chrono>
+#include <random>
 #include <thread>
 #include <vector>
 #include <bits/ctype_base.h>
@@ -17,6 +18,11 @@ int y = 0;
 bool gameOver = false;
 Game game;
 int board[Board::BOARD_WIDTH+1][Board::BOARD_HEIGHT];
+
+static std::random_device rd;//C++11 提供的 硬件真随机数生成器（如果平台支持）
+static std::mt19937 gen(rd());//梅森旋转伪随机数生成器
+static std::uniform_int_distribution<> distrib(1,8);
+
 void Game::init()
 {
     initscr();
@@ -28,13 +34,14 @@ void Game::init()
 
 void Game::blockGenerate(Graph &block)
 {
+    int randomX = distrib(gen);
     for (int x = 0;x < 4;x++)
     {
         for (int y = 0;y < 4;y++)
         {
             if (block.matrix[y][x] == 1)//初始化时与图形定义视觉上一致
             {
-                board[x+4][y] = 1;
+                board[x+randomX][y] = 1;
             }
         }
     }
@@ -244,7 +251,7 @@ bool Game::isBorderL()
         {
             if (board[x][y] == 1)
             {
-                if (board[x][y-1] == 2)
+                if (board[x-1][y] == 2)
                     return true;
             }
         }
@@ -265,7 +272,7 @@ bool Game::isBorderR()
         {
             if (board[x][y] == 1)
             {
-                if (board[x][y+1] == 2)
+                if (board[x+1][y] == 2)
                     return true;
             }
         }
@@ -311,15 +318,16 @@ void Game::clearLines(int y)
     if (isFull(y))
     {
         rate++;
+        score += Score(rate,y);
         // clearLine(y);
         downfall(y);
         clearLines(y);
     }
 }
 
-double Game::Score(int rate)//分数和什么有关? 待定
+double Game::Score(int rate,int y)//分数和什么有关? 待定
 {
-    return 10*rate*rate;
+    return (100/(static_cast<double>(y)+1))*rate;
 }
 
 void Game::clearLinesAndScore()
@@ -339,12 +347,35 @@ void Game::clearLinesAndScore()
 
         //score();
     }
-    score += Score(rate);
+    // score += Score(rate,y);
 }
 
 void Game::showData()
 {
     mvprintw(0,15,"Score: %lf",score);
+    // for (int x = 0;x < 4;x++)
+    // {
+    //     for (int y = 0;y < 4;y++)
+    //     {
+    //         if (block->matrix[y][x] == 1)
+    //             mvaddch(3+y,15+x,'#');
+    //     }
+    // }
+    mvprintw(2,15,"next block:");
+    preview();
+    mvprintw(10,15,"type 'a' to shift the block left; 'd' to right; 's' to move down; 'space' to rotate");
+}
+
+void Game::preview()
+{
+    for (int x = 0;x < 4;x++)//preview
+    {
+        for (int y = 0;y < 4;y++)
+        {
+            if (block->matrix[y][x] == 1)
+                mvaddch(4+y,20+x,'#');
+        }
+    }
 }
 
 void Game::rotate()//提取到临时矩阵 做变换后写回
@@ -454,16 +485,19 @@ void Game::run()
 {
     //先生成第一个
     type = randomBlock();
-    auto block = createBlock(type);
+    block = createBlock(type);
     if (block == nullptr)
         return;//异常处理
     blockGenerate(*block);//随即生成
+    block = createBlock(type);
     // Game game;
     // for (int x = 1;x < Board::BOARD_WIDTH - 1;x++)//test
     // {
     //     board[x][19] = 2;
     // }
     const auto frameDuration = std::chrono::milliseconds(1000 / fps);
+
+
 
     while (!gameOver)
     {
@@ -477,8 +511,8 @@ void Game::run()
 
         if (bottomFlag)
         {   auto type = randomBlock();
-            auto block = createBlock(type);
             blockGenerate(*block);
+            block = createBlock(type);
             bottomFlag = 0;
         }
         clear();//这样前文只需关注棋盘逻辑,不用手动清除
