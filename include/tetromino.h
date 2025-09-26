@@ -6,6 +6,7 @@
 #define TETROMINO_H
 #include <cstring>
 #include <memory>
+#include <conio.h>
 
 class Graph;
 

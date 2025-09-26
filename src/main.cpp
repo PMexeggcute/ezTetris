@@ -3,6 +3,7 @@
 //
 #include "game.h"
 #include <curses.h>
+#include <thread>
 
 #include "board.h"
 
@@ -24,8 +25,11 @@ int main(){
     Board board;
     game.init();
     board.init();
+
+    std::thread t(Game::inputThread, &game);
     game.run();
-    getch();            // 等待用户按键
+    t.join();
+    _getch();            // 等待用户按键
     endwin();
     return 0;
 }

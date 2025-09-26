@@ -5,8 +5,12 @@
 #ifndef GAME_H
 #define GAME_H
 //游戏主要循环
-#include "curses.h"
+#include <mutex>
+#include <queue>
+
 #include "tetromino.h"
+#undef getch
+#include <curses.h>
 extern int x;//作为偏移
 extern int y;
 extern bool gameOver;
@@ -17,7 +21,7 @@ class Game
     void init();
     // void drawBlock(Graph &g,int x, int y);
     // void eraseBlock(Graph &g,int x, int y);
-    void processInput();
+    void processInput(char ch);
     void run();
     void cleanup();
     void update();
@@ -36,10 +40,17 @@ class Game
     double Score(int rate);
     void showData();
     void rotate();
-    private:
+    void inputThread();
+
+private:
     int rate = 0;//消除逻辑中用于记录一次性消除了几行
     int bottomFlag = 0;
     double score = 0;
     BlockType type;
+    int fps = 60;
+    int fallCounter = 0;//决定何时执行下落逻辑
+
+    std::queue<char> inputQueue;
+    std::mutex queuemutex;
 };
 #endif //GAME_H

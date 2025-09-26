@@ -94,14 +94,14 @@ void Game::eraseBoard()
     // refresh();
 }
 
-void Game::processInput()//键盘操作逻辑
+void Game::processInput(char ch)//键盘操作逻辑
 {
-    int ch = getch();
+    // int ch = getch();
     // game.eraseBoard();
     //后续增加下操作
     if (!isBottom())
     {
-        if(ch == 260)//L
+        if(ch == 97)//L
         {
             if (!game.isBorderL()) //未出界 靠近左边或右边一列的数据不能为1
             //左移逻辑
@@ -119,7 +119,7 @@ void Game::processInput()//键盘操作逻辑
                 }
             }
         }
-        else if (ch == 261) //右
+        else if (ch == 100) //右
         {
             if (!game.isBorderR()) //未出界
             //右移逻辑
@@ -134,6 +134,20 @@ void Game::processInput()//键盘操作逻辑
                             board[x][y] = 0;
                             board[x + 1][y] = 1;
                         }
+                    }
+                }
+            }
+        }
+        else if (ch == 115)//s
+        {
+            for (int y = Board::BOARD_HEIGHT - 1;y >= 0;y--)//下落
+            {
+                for (int x = Board::BOARD_WIDTH;x >= 0;x--)
+                {
+                    if (board[x][y] == 1)
+                    {
+                        board[x][y] = 0;
+                        board[x][y+1] = 1;
                     }
                 }
             }
@@ -153,17 +167,6 @@ void Game::update()//方块下落逻辑
      下落
      然后refresh
      */
-    for (int y = Board::BOARD_HEIGHT - 1;y >= 0;y--)//下落
-    {
-        for (int x = Board::BOARD_WIDTH;x >= 0;x--)
-        {
-            if (board[x][y] == 1)
-            {
-                board[x][y] = 0;
-                board[x][y+1] = 1;
-            }
-        }
-    }//先下落
     if (isBottom())//触底了
     {//1全变2
         for (int y = 0;y < Board::BOARD_HEIGHT;y++)
@@ -175,6 +178,25 @@ void Game::update()//方块下落逻辑
             }
         }
         bottomFlag = 1;
+        //这里对计时器处理逻辑存疑
+        return;
+    }
+
+    fallCounter++;
+    if (fallCounter == 60)
+    {
+        fallCounter = 0;
+        for (int y = Board::BOARD_HEIGHT - 1;y >= 0;y--)//下落
+        {
+            for (int x = Board::BOARD_WIDTH;x >= 0;x--)
+            {
+                if (board[x][y] == 1)
+                {
+                    board[x][y] = 0;
+                    board[x][y+1] = 1;
+                }
+            }
+        }
     }
 }
 
@@ -413,6 +435,21 @@ void Game::rotate()//提取到临时矩阵 做变换后写回
     }
 }
 
+void Game::inputThread()//实现异步输入
+{
+    while (!gameOver)
+    {
+        if (_kbhit())
+        {
+            char c = _getch();
+            std::lock_guard<std::mutex> lock(queuemutex);
+            inputQueue.push(c);
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+}
+
+
 void Game::run()
 {
     //先生成第一个
@@ -426,6 +463,8 @@ void Game::run()
     // {
     //     board[x][19] = 2;
     // }
+    const auto frameDuration = std::chrono::milliseconds(1000 / fps);
+
     while (!gameOver)
     {
         /*展示棋盘
@@ -433,6 +472,9 @@ void Game::run()
         到底时不再erase
         然后循环,每次都循环展示棋盘而不是方块对象
         */
+
+        auto frameStart = std::chrono::steady_clock::now();
+
         if (bottomFlag)
         {   auto type = randomBlock();
             auto block = createBlock(type);
@@ -441,12 +483,31 @@ void Game::run()
         }
         clear();//这样前文只需关注棋盘逻辑,不用手动清除
         drawBoard();//refresh()在这里
-        // render();//刷新屏幕
-        processInput();
-        update();//方块下落
+        // render();//渲染
+        // processInput();
+        {
+            //处理输入
+            std::lock_guard<std::mutex> lock(queuemutex);
+            while (!inputQueue.empty())
+            {
+                char key = inputQueue.front();
+                inputQueue.pop();
+                processInput(key);
+            }
+        }
+        update();//方块下落 每循环60次执行一次下落逻辑 后续添加下键操作 isBottom()分支不受循环次数影响?
         //消行计分逻辑
         //先变为2(静止块),然后判断是否可消除,再判断是否over 注意最上面一层的边界逻辑
         clearLinesAndScore();//blockGenerate逻辑应该在清除之后
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        //游戏结束判断
+        for (int x = 1;x < Board::BOARD_WIDTH + 1;x++)
+        {
+            if (board[x][0] == 2)
+                gameOver = true;
+        }
+
+        auto frameEnd = std::chrono::steady_clock::now();
+        std::this_thread::sleep_until(frameStart+frameDuration);
+        //60帧
     }
 }

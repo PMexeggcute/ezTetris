@@ -2,6 +2,7 @@ write by cpp,for practicing
 
 for fun~
 
+using 'a' to shift the block left; 'd' to right; 's' to move down; 'space' to rotate
 - [x] 完成边界限制
 - [x] 左右移动逻辑
 - [x] 方块补全
@@ -9,9 +10,13 @@ for fun~
 - [x] 完成底部停留
 - [x] 方块旋转(TAT)(AI神力) (就这样吧,能跑就行 之后去看看SRS)
 - [x] 消行
+- [x] gameOver?1:0
+- [x] 输入操作是异步的
+- [ ] 进入棋盘时x坐标随机
+- [ ] 下一个方块预览
 - [ ] 计分算法(变量是哪些?y?行数?)
-- [ ] gameOver?1:0
-- [ ] 异常处理
 - [ ] 本地记录
-- [ ] 输入操作是异步的
+- [ ] 手柄输入
+- [ ] 逐步进入棋盘
+- [ ] 异常处理
 - [ ] 联网
